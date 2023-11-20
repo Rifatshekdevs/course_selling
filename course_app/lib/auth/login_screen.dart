@@ -1,9 +1,11 @@
-import 'package:course_app/auth/forgot_pass.dart/forgot_pass.dart';
+// ignore_for_file: deprecated_member_use, unused_element
+
+import 'package:course_app/auth/provider/auth_provider_state.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../constant/constant.dart';
-import '../main_menu.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,41 +15,45 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height / 1.3,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 5, bottom: 20),
-              height: 8,
-              width: 100,
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 209, 209, 209),
-                borderRadius: BorderRadius.circular(10),
+    return Material(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 5, bottom: 20),
+                height: 8,
+                width: 100,
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 209, 209, 209),
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-            ),
-            Column(
-              children: [
-                _text("Helo Adam",
-                    fontSize: 30, color: black, fontWeight: FontWeight.w600),
-                _text("Welcome Back",
-                    color: black.withOpacity(0.5),
-                    fontWeight: FontWeight.normal,
-                    fontSize: 15),
-                _text("Please login for Continue !",
-                    color: black.withOpacity(0.5),
-                    fontWeight: FontWeight.normal,
-                    fontSize: 15),
+              Column(
+                children: [
+                  _text("Helo Adam",
+                      fontSize: 30, color: black, fontWeight: FontWeight.w600),
+                  _text("Welcome Back",
+                      color: black.withOpacity(0.5),
+                      fontWeight: FontWeight.normal,
+                      fontSize: 15),
+                  _text("Please login for Continue !",
+                      color: black.withOpacity(0.5),
+                      fontWeight: FontWeight.normal,
+                      fontSize: 15),
 
-                // form
-                _form(),
-              ],
-            )
-          ],
+                  // form
+                  _form(),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -71,39 +77,52 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // form
   Widget _form() {
+    AuthProviderState provider =
+        Provider.of<AuthProviderState>(context, listen: false);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 30),
       child: Form(
+        key: formKey,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _emailField("Email or Phone Number", "user@gmail.com", Icons.email),
+            _emailField(
+              "Email or Phone Number",
+              "user@gmail.com",
+              Icons.email,
+              provider.email,
+              (value) {
+                if (value == null || value.isEmpty) {
+                  return 'The Email field is required';
+                } else if (!RegExp(r'^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[a-zA-Z]+')
+                    .hasMatch(value)) {
+                  return 'Please enter a valid email address';
+                }
+                return null;
+              },
+            ),
             _passwordField(
-                "Input Password", "Password", Icons.key, Icons.remove_red_eye),
-            _loginButton(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20),
-              child: GestureDetector(
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ForgotPasswordScreen())),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: const [
-                    Text("Forgor Pass"),
-                    Icon(Icons.arrow_right_alt),
-                  ],
-                ),
-              ),
+              "Input Password",
+              "Password",
+              Icons.key,
+              Icons.remove_red_eye,
+              provider.password,
+              (value) {
+                if (value!.length < 6) {
+                  return 'Password must be at least 6 characters long';
+                }
+                return null;
+              },
             ),
-            _text(
-              "Or connect with",
-              color: black.withOpacity(0.5),
-              fontSize: 15,
-              fontWeight: FontWeight.normal,
-            ),
-            _listAccount(),
+            _loginButton((){
+              if (formKey.currentState!.validate()) {
+                provider.login(context);
+                setState(() {
+                  
+                });
+              }
+            },provider.isLoading? Center(child: CircularProgressIndicator(color: Colors.white,),): Text('Login'),),
+            //
           ],
         ),
       ),
@@ -111,8 +130,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // email textfile
-  Widget _emailField(String label, String hint, IconData prefix) {
+  Widget _emailField(
+    String label,
+    String hint,
+    IconData prefix,
+    TextEditingController controller,
+    FormFieldValidator<String>? validate,
+  ) {
     return TextFormField(
+      controller: controller,
+      validator: validate,
       decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 25),
           enabledBorder: OutlineInputBorder(
@@ -134,10 +161,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // email textfile
   Widget _passwordField(
-      String label, String hint, IconData prefix, IconData sufix) {
+    String label,
+    String hint,
+    IconData prefix,
+    IconData sufix,
+    TextEditingController controller,
+    FormFieldValidator<String>? validate,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: TextFormField(
+        controller: controller,
+        validator: validate,
         obscureText: true,
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 25),
@@ -159,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _loginButton() {
+  Widget _loginButton(Function()? onPressed,Widget? child) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20, top: 15),
       child: ElevatedButton(
@@ -172,13 +207,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           minimumSize: Size(MediaQuery.of(context).size.width, 70),
         ),
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainMenu(),
-          ),
-        ),
-        child: Text('Login'),
+        onPressed: onPressed,
+        child: child
       ),
     );
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "640155961003",
+    "project_id": "interective-cares",
+    "storage_bucket": "interective-cares.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:640155961003:android:347df744af4dfb4cf1d9ee",
+        "android_client_info": {
+          "package_name": "com.example.course_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxD8LXBZoE7J6la4MrSOKMM8pY6XZsWuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
